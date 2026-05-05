@@ -1,0 +1,35 @@
+# LaTeX build artefacts
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.bbl
+*.blg
+*.idx
+*.ind
+*.ilg
+*.nav
+*.snm
+*.vrb
+*.run.xml
+*.bcf
+auto/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*~
+.vscode/
+.idea/
+
+# Compiled PDF lives in the repo so a reviewer can read it without a TeX
+# install; uncomment the next line if you'd rather rebuild-on-clone:
+# *.pdf
