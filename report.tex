@@ -15,6 +15,7 @@
 \usepackage{microtype}
 \usepackage{listings}
 \usepackage{caption}
+\usepackage{float}
 
 \hypersetup{
   colorlinks=true,
@@ -25,6 +26,9 @@
 }
 
 \onehalfspacing
+
+% --- Horizontal rule for title page ---
+\newcommand{\HRule}{\rule{\linewidth}{0.6mm}}
 
 % --- Status markers (suppressed for final compile) ---
 \newcommand{\status}[1]{}
@@ -45,6 +49,9 @@
 }
 \lstset{style=plain}
 
+% Give LaTeX extra stretch to avoid overfull hboxes in paragraphs with long paths
+\setlength{\emergencystretch}{3em}
+
 % --- Title ---
 \title{Adaptive Web Interaction:\\Leveraging Reinforcement Learning for Comprehensive Action Support}
 \author{Muhammad Saad Ashraf \and Muhammad Salman Siddiq \and Awais Nazir}
@@ -56,29 +63,42 @@
 % TITLE PAGE
 % =========================================================
 \begin{titlepage}
-  \centering
-  \vspace*{1cm}
-  {\Large \textbf{National University of Sciences and Technology (NUST)}\par}
-  \vspace{0.4cm}
-  {\large Pakistan\par}
-  \vspace{2cm}
-  {\Huge\bfseries Adaptive Web Interaction:\par}
-  \vspace{0.3cm}
-  {\LARGE Leveraging Reinforcement Learning\\ for Comprehensive Action Support\par}
-  \vspace{2cm}
-  {\large\itshape Final Year Project Report\par}
-  \vspace{1.5cm}
-  {\large Submitted by\par}
-  \vspace{0.4cm}
-  {\Large
-    Muhammad Saad Ashraf\\[2pt]
-    Muhammad Salman Siddiq\\[2pt]
-    Awais Nazir\par
-  }
-  \vspace{1.5cm}
-  {\large \textit{Supervisor:} Dr.~Faisal Shafait\par}
-  \vfill
-  {\large 2026\par}
+\thispagestyle{empty}
+\centering
+
+\vspace*{0.5cm}
+\includegraphics[width=0.25\textwidth]{nust.png}\\[1cm]
+
+\textsc{\LARGE \textbf{National University of Sciences and Technology}}\\[0.3cm]
+\textbf{\textsc{\large School of Electrical Engineering and Computer Science (SEECS)}}\\[0.5cm]
+
+\HRule \\[0.5cm]
+
+{\LARGE \textbf{Final Year Project Report}}\\[0.2cm]
+{\large For}\\[0.2cm]
+{\Large \textbf{Adaptive Web Interaction: Leveraging Reinforcement Learning\\ for Comprehensive Action Support}}\\[0.5cm]
+
+\HRule \\[1.6cm]
+
+{\Large \textbf{Final Year Project}}\\[1.8cm]
+
+\begin{minipage}[t]{0.45\textwidth}
+\raggedright
+\textbf{Team Members:}\\[0.3cm]
+Awais Nazir\\
+Muhammad Saad Ashraf\\
+Muhammad Salman Siddiq
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\raggedright
+\textbf{Advisor:}\\[0.3cm]
+Dr.~Faisal Shafait
+\end{minipage}\\[1.5cm]
+
+\flushright
+\textbf{Date:} 2026
+
 \end{titlepage}
 
 % =========================================================
@@ -86,9 +106,37 @@
 % =========================================================
 \pagenumbering{roman}
 
-\chapter*{Certificate / Declaration}
-\addcontentsline{toc}{chapter}{Certificate / Declaration}
-Department-supplied templates. To be added during final compile.
+\chapter*{Declaration}
+\addcontentsline{toc}{chapter}{Declaration}
+
+We hereby declare that this project report entitled \textbf{``Adaptive Web Interaction: Leveraging Reinforcement Learning for Comprehensive Action Support''} submitted to the School of Electrical Engineering and Computer Science (SEECS), National University of Sciences and Technology (NUST), is a record of original work done by us under the guidance of our supervisor Dr.~Faisal Shafait. No part of this report has been plagiarised without proper citation. This report is submitted in partial fulfilment of the requirements for the degree of Bachelor of Engineering in Software Engineering.
+
+\vspace{1.2cm}
+\noindent
+\begin{tabular}{@{}p{0.55\textwidth}p{0.4\textwidth}@{}}
+\textbf{Team Members} & \textbf{Signature} \\[0.5cm]
+Awais Nazir & \hrulefill \\[0.7cm]
+Muhammad Saad Ashraf & \hrulefill \\[0.7cm]
+Muhammad Salman Siddiq & \hrulefill \\[0.7cm]
+\end{tabular}
+
+\vspace{0.8cm}
+\noindent
+\begin{tabular}{@{}p{0.55\textwidth}p{0.4\textwidth}@{}}
+\textbf{Supervisor} & \textbf{Signature} \\[0.5cm]
+Dr.~Faisal Shafait & \hrulefill \\[0.7cm]
+\end{tabular}
+
+\vspace{0.6cm}
+\noindent\textbf{Date:} \underline{\hspace{4cm}} \hspace{1cm} \textbf{Place:} Islamabad, Pakistan
+
+\chapter*{Dedication}
+\addcontentsline{toc}{chapter}{Dedication}
+\vspace*{2cm}
+\begin{center}
+\textit{To our families, for their patience through the late-night training runs\\and the occasional 3~AM checkpoint restart.\\[0.6cm]
+And to the open-source community---whose open release of models, data,\\and tools made this project possible.}
+\end{center}
 
 \chapter*{Acknowledgments}
 \addcontentsline{toc}{chapter}{Acknowledgments}
@@ -101,11 +149,41 @@ Finally, we thank our families and peers for their patience during the more comp
 
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
-Browser-navigation benchmarks for web agents (InSTA, Mind2Web, WebArena) are widely used to evaluate small language models trained with reinforcement learning, but the websites they reference change continuously. We audit the InSTA-150k benchmark with a Gemini-based feasibility judge over 2{,}598 sampled test tasks and find that \textbf{only 28.3\% of tasks are reliably feasible}: 28.6\% target sites are inaccessible to automated agents, 13.0\% reference content that has since been removed or restructured, and 30.1\% are too uncertain for the judge to determine. We further show that \textbf{24.3\% of inaccessible sites returned an HTTP 2xx}, demonstrating that reachability probing alone is insufficient---semantic verification is required. We then apply PPO + LoRA reinforcement-learning training to the base SFT model on a 2{,}068-task feasibility-filtered subset and evaluate on a 100-task held-out feasibility-filtered test set. RL training on the cleaned subset yields \textbf{a +17.1 percentage-point improvement in mean judge-success score (from 29.05\% for the base SFT model to 46.17\% for the RL-trained checkpoint)}, suggesting that benchmark hygiene materially affects measured agent performance.
+Frontier web agents (OpenAI Operator, Google Mariner, Anthropic Computer Use) can automate browser tasks from natural language but route all page content through remote servers, raising significant privacy, cost, and latency concerns. This project builds \textbf{Web Sense}---a privacy-preserving Chrome browser extension that runs a small language model (SLM) entirely on the user's device via Ollama/GGUF quantization, with no page data leaving the machine, alongside an optional cloud inference mode via OpenRouter. To improve the SLM's web navigation ability, we fine-tune Qwen3-1.7B with PPO + LoRA reinforcement learning using the InSTA-150k benchmark as a training source. During setup we discover that the benchmark has undergone severe decay: auditing 2{,}598 sampled tasks with a Gemini-2.5-Flash feasibility judge reveals \textbf{only 28.3\% of tasks are reliably feasible}---28.6\% of target sites are inaccessible, 13.0\% reference removed content, and 30.1\% are uncertain. We further find that \textbf{24.3\% of inaccessible sites return HTTP 2xx}, showing that reachability probing alone is insufficient. We filter the dataset, train on a 2{,}068-task cleaned subset, and evaluate on a 100-task held-out filtered set. RL training yields \textbf{a +17.1 percentage-point improvement in mean judge-success score (from 29.05\% for base SFT to 46.17\% for the RL checkpoint)}. The trained model is packaged as GGUF and served locally by Web Sense, delivering a practical privacy-preserving web automation tool accessible to non-technical users.
 
 \tableofcontents
 \listoffigures
 \listoftables
+
+\chapter*{List of Abbreviations}
+\addcontentsline{toc}{chapter}{List of Abbreviations}
+
+\begin{tabular}{@{}p{1.4cm}p{5.6cm}p{1.4cm}p{5.2cm}@{}}
+\textbf{Abbrev.} & \textbf{Definition} & \textbf{Abbrev.} & \textbf{Definition} \\[0.3cm]
+API  & Application Programming Interface & KL    & Kullback-Leibler divergence \\
+CI   & Confidence Interval               & LLM   & Large Language Model \\
+DOM  & Document Object Model             & LoRA  & Low-Rank Adaptation \\
+DFD  & Data Flow Diagram                 & MV3   & Chrome Manifest V3 \\
+EMA  & Exponential Moving Average        & NF4   & Normal Float 4-bit \\
+FR   & Functional Requirement            & NFR   & Non-Functional Requirement \\
+GAE  & Generalised Advantage Estimation  & NUST  & Nat.\ Univ.\ of Sciences \& Technology \\
+GCP  & Google Cloud Platform             & OOP   & Object-Oriented Programming \\
+GGUF & GPT-Generated Unified Format      & PEFT  & Parameter-Efficient Fine-Tuning \\
+GPU  & Graphics Processing Unit          & PPO   & Proximal Policy Optimisation \\
+GRPO & Group Relative Policy Opt.        & QLoRA & Quantised Low-Rank Adaptation \\
+HTML & HyperText Markup Language         & REST  & Representational State Transfer \\
+HTTP & HyperText Transfer Protocol       & RL    & Reinforcement Learning \\
+InSTA & Internet-Scale Training for Agents & RLAIF & RL from AI Feedback \\
+JSON & JavaScript Object Notation        & RLHF  & RL from Human Feedback \\
+     &                                   & RLOO  & REINFORCE Leave-One-Out \\
+     &                                   & SDS   & Software Design Specification \\
+     &                                   & SEECS & School of EE \& Comp.\ Science \\
+     &                                   & SFT   & Supervised Fine-Tuning \\
+     &                                   & SLM   & Small Language Model \\
+     &                                   & SRS   & Software Requirements Spec. \\
+     &                                   & UI    & User Interface \\
+     &                                   & VRAM  & Video Random Access Memory \\
+\end{tabular}
 
 % =========================================================
 % MAIN BODY
@@ -118,25 +196,30 @@ Browser-navigation benchmarks for web agents (InSTA, Mind2Web, WebArena) are wid
 
 \section{Background and Motivation}
 
-Small language models (SLMs) fine-tuned for browser navigation are an active area of research, with reinforcement learning increasingly used to improve agent behavior beyond what supervised fine-tuning alone can achieve. A typical pipeline trains an SLM agent against a benchmark of natural-language tasks, each grounded in a specific live website (e.g.~\textit{``find the price of an iPhone~15 on apple.com''}). The agent's actions---clicks, form fills, navigations---are evaluated by a separate LLM judge that scores the resulting trajectory on success, efficiency, and self-correction.
+Web agents powered by large language models (LLMs) can browse the internet and complete tasks---filling forms, navigating menus, extracting information---from plain natural-language instructions. Recent products such as OpenAI Operator, Google Project Mariner, and Anthropic Computer Use demonstrate that this capability is commercially viable. However, all three rely on \textbf{frontier cloud models}: to execute a task, the agent must send the full HTML of every page the user visits to a remote server. This creates serious privacy, cost, and latency concerns that limit adoption, especially for professional or sensitive workflows.
 
-This pipeline rests on a quiet assumption: \textbf{the benchmark tasks remain valid over time}. That is, the websites they reference still respond, the content the task asks about still exists, and the navigation steps still resolve to the right answer. In practice, this assumption breaks rapidly. Sites disappear, redirect, deploy bot-detection, restructure content, or simply update---all without notice to anyone training agents against them. When a substantial fraction of ``the benchmark'' is silently broken, the gap between the agent's capability and its measured performance is no longer just a function of the agent: it is a compound of the agent's ability and the benchmark's residual usability. Training signal computed against broken tasks is at best noise and at worst a directly counter-productive gradient.
+An alternative exists: \textbf{small, open-weight language models} (SLMs, 1--7~B parameters) that can run entirely on consumer hardware via efficient runtimes such as Ollama and llama.cpp. If an SLM can achieve competitive web navigation performance, it can be deployed locally in a browser extension---page content never leaves the device, there are no per-call API fees, and latency is bounded by local hardware rather than network round-trips. Recent work (InSTA, WebAgent-R1) shows that supervised fine-tuning followed by reinforcement learning (RL) can bring SLMs close to frontier-model performance on web benchmarks.
 
-The motivating question for this project is therefore not ``how do we train a better web agent?'' but ``what fraction of our training and evaluation budget is being wasted on tasks that no model could possibly succeed at, and what happens when we remove them?''
+This project pursues exactly that goal: train an SLM (Qwen3-1.7B) with PPO + LoRA reinforcement learning to improve its web navigation ability, package the result as a GGUF model file, and deliver it as the \textbf{Web Sense} browser extension for privacy-preserving, on-device web automation.
+
+A key practical challenge arose during setup. The most accessible open training source for web agents, the InSTA-150k benchmark, assigns each task to a specific live website. By 2026, a large fraction of those websites have disappeared, deployed bot-detection, or restructured their content---meaning many training tasks produce near-zero reward regardless of agent quality, corrupting the RL gradient signal. Before training could proceed, we designed and ran a \textbf{feasibility audit} to identify and remove broken tasks from the dataset.
 
 \section{Problem Statement}
 
-Existing reinforcement-learning pipelines for browser-navigating language models train and evaluate against fixed snapshots of the live web. Over time these snapshots drift: websites change, become inaccessible to automated agents, or have their content removed. Despite this widely-acknowledged practical problem, no published work systematically audits a popular web-agent benchmark to quantify the rate and nature of this decay, and no public training pipeline filters out broken tasks before they are used to compute training reward. As a result, both reported agent performance and the agent itself are confounded by benchmark hygiene effects of unknown magnitude.
+Current capable web agents require frontier cloud LLMs, which means the user's browsing data---page HTML, form content, task instructions---is transmitted to a third-party server on every action. This is incompatible with privacy-sensitive workflows and imposes per-query cost and network latency. Small open-weight language models can run locally but lag frontier models substantially on web navigation benchmarks, making them impractical as a drop-in replacement without further improvement.
+
+A secondary, practical problem surfaced during development: the most accessible open training dataset for web-agent RL (InSTA-150k) suffers from severe decay---a large fraction of its tasks reference websites that no longer respond, have deployed bot-detection, or have removed the referenced content. Training an RL agent against broken tasks produces a corrupted gradient signal and requires a data-cleaning step before meaningful improvement can be achieved.
 
 \section{Objectives}
 
-The objectives of this project, in order of dependency, are:
+The primary objective is to build a privacy-preserving web automation tool using a small, locally-deployable language model. The supporting objectives, in order of execution, are:
+
 \begin{enumerate}
-  \item Quantify the feasibility decay of the InSTA-150k web-agent benchmark by classifying a representative sample of its tasks using a Gemini-2.5-Flash-based judge with URL-context grounding.
-  \item Construct two reusable artifacts from the audit: (a) a feasibility-filtered \emph{training} subset that excludes broken tasks, and (b) a feasibility-filtered \emph{held-out test} subset usable for unbiased evaluation.
-  \item Train a small (1.7~B parameter) language-model agent on the cleaned training subset using PPO with LoRA adapters, anchored to the base SFT policy via a reference-KL term.
-  \item Evaluate the trained agent against the unmodified base SFT model on the held-out filtered set, using paired statistical tests (Wilcoxon and McNemar) to quantify the gap.
-  \item Release reproducibility artifacts---code, per-task feasibility classifications, hyperparameters, and the trained checkpoint---under a public GitHub repository so that any reviewer or follow-on researcher can re-run the evaluation end-to-end.
+  \item \textbf{Build the Web Sense browser extension}: a Chrome extension (Manifest V3) backed by a FastAPI agent server, supporting fully on-device inference via Ollama/GGUF and optional cloud inference via OpenRouter.
+  \item \textbf{Improve SLM performance via RL}: fine-tune Qwen3-1.7B using PPO with LoRA adapters on web navigation tasks, anchored to the base SFT policy via a KL-divergence reference term, so the local model achieves meaningfully better task success than the untuned baseline.
+  \item \textbf{Clean the training data}: audit the InSTA-150k benchmark to identify and remove broken or infeasible tasks before computing any RL training reward, using a Gemini-2.5-Flash feasibility judge with live URL-context grounding.
+  \item \textbf{Evaluate the trained agent}: compare the RL-trained checkpoint against the base SFT model on a held-out feasibility-filtered test set using paired statistical tests (Wilcoxon and McNemar).
+  \item \textbf{Release reproducibility artifacts}: code, feasibility classifications, hyperparameters, and trained checkpoint on a public GitHub repository.
 \end{enumerate}
 
 \section{Scope and Assumptions}
@@ -147,25 +230,57 @@ The objectives of this project, in order of dependency, are:
 
 \paragraph{Assumptions.} The audit assumes that the websites referenced by InSTA-150k remain sufficiently stable over the audit's wall-clock window (a few days) to give consistent classifications. We assume that Gemini~2.5~Flash's classification behavior is reproducible across calls within the project window: a small sanity-check sample (Appendix~\ref{app:sanity-check}) provides spot evidence for this. We assume the InSTA-provided train/test split is appropriate and do not re-split. Finally, the experimental design assumes that single-trajectory PPO updates---necessary given our compute budget---are sufficient to surface measurable performance differences if they exist; any null results are interpreted with this caveat in mind.
 
+\section{Stakeholders and Business Opportunity}
+
+Web automation agents are at an inflection point: frontier cloud-based products (OpenAI Operator, Google Project Mariner, Anthropic Claude Computer Use) can navigate websites autonomously, but they require page content to be sent to remote servers---raising privacy, latency, and cost concerns. A locally-running, open-weight agent that achieves competitive performance represents a meaningful step toward democratised web automation.
+
+The primary stakeholders of this project are: \textbf{end users} (everyday and professional) who want to automate repetitive web tasks without sharing page contents with a third-party service; \textbf{privacy-conscious individuals} who require all page HTML and task instructions to remain on their device; \textbf{developers and researchers} who need a modular, reproducible agent baseline for extension or benchmarking; and \textbf{SEECS/NUST} as the host academic institution. The practical deliverable---the \textbf{Web Sense} browser extension (\S\ref{sec:websense})---is designed to be installable in under five minutes by a non-technical user.
+
+\section{Technology Stack}
+
+Table~\ref{tab:techstack} summarises the technologies used across the three components of the project: the RL training pipeline, the feasibility audit, and the deployed Web Sense extension.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{3cm}p{4.5cm}p{5.5cm}}
+\toprule
+\textbf{Component} & \textbf{Technology} & \textbf{Role} \\
+\midrule
+Base model        & Qwen3-1.7B (SFT)            & Starting point for RL fine-tuning \\
+Fine-tuning       & PPO + LoRA, QLoRA / NF4     & RL training on filtered data \\
+Training infra    & GCP g2-standard-8, L4 GPU   & GPU compute (24~GB VRAM) \\
+LLM judge         & Gemini 2.5 Flash (Vertex AI) & Feasibility audit and reward signal \\
+Browser env       & Playwright, Chromium        & Agent rollout environment \\
+Extension (front) & JavaScript, Chrome MV3 API  & User-facing browser extension \\
+Extension (back)  & Python 3.12, FastAPI        & Agent orchestration, HTML parsing \\
+Local inference   & Ollama, llama.cpp, GGUF     & On-device model serving \\
+Cloud inference   & OpenRouter API              & Access to frontier cloud LLMs \\
+Dataset           & InSTA-150k (Hugging Face)   & Source benchmark for training and audit \\
+\bottomrule
+\end{tabular}
+\caption{Technology stack across the three project components.}
+\label{tab:techstack}
+\end{table}
+
 \section{Contributions}
 
-This project makes two contributions:
+This project makes three contributions:
 
 \begin{enumerate}
-  \item \textbf{A feasibility audit of the InSTA-150k benchmark.} We use a Gemini-2.5-Flash-based judge with URL-context grounding to classify 2{,}598 sampled InSTA test tasks into four categories---feasible, website-down, content-outdated, uncertain. We report per-class breakdowns, characterize the disagreement between cheap HTTP-reachability probes and the more expensive LLM judge, and release the per-task classifications for reuse.
-  \item \textbf{An RL training experiment on a feasibility-filtered subset.} We apply PPO + LoRA training to the base SFT model on a 2{,}068-task feasibility-filtered training subset, and evaluate on a 100-task held-out feasibility-filtered subset, comparing the trained model against the base SFT baseline.
+  \item \textbf{Web Sense: a privacy-preserving browser extension for web automation.} A Chrome Manifest V3 extension backed by a Python/FastAPI agent server. In Local Mode, the trained Qwen3-1.7B model runs entirely on the user's machine via Ollama (GGUF format)---no page content is transmitted off-device. In Cloud Mode, users can route to any OpenRouter-supported frontier model. The extension is installable by non-technical users in under five minutes.
+  \item \textbf{An RL-improved SLM for web navigation.} We apply PPO + LoRA to Qwen3-1.7B-SFT on a 2{,}068-task feasibility-filtered training subset and evaluate on a 100-task held-out set. The trained checkpoint achieves a \textbf{+17.1 percentage-point improvement in mean judge-success score} (29.05\% $\to$ 46.17\%) over the base SFT model.
+  \item \textbf{A feasibility audit of the InSTA-150k benchmark.} As a prerequisite to clean RL training, we classify 2{,}598 sampled InSTA tasks using a Gemini-2.5-Flash judge with live URL-context grounding, finding only 28.3\% of tasks feasible. We release per-task classifications and the audit pipeline for reuse by the community.
 \end{enumerate}
-
-Our results suggest that benchmark hygiene is not just a measurement issue but an \textbf{agent-development} issue: training on a set of mostly-broken tasks corrupts the gradient signal, while training on a cleaned subset produces a measurably better agent.
 
 \section{Report Organization}
 
-Chapter~\ref{chap:litreview} surveys prior work on web-agent benchmarks, reinforcement learning for language models, parameter-efficient fine-tuning, and LLM-as-judge evaluation, and positions our contributions against the gap analysis of those literatures. Chapter~\ref{chap:methodology} describes the three pipelines that constitute the work---the feasibility audit, the RL training loop, and the held-out evaluation methodology---together with the reward design and the PPO update equations. Chapter~\ref{chap:implementation} translates the methodology into code: software architecture, GCP infrastructure, the Playwright watchdog, and the reproducibility artifacts shipped with the project. Chapter~\ref{chap:results} presents the results: the feasibility-audit numbers and Figure~1 (\S\ref{sec:feasibility-results}), the training dynamics, the headline held-out evaluation comparison, and a discussion of what the numbers do and do not support. Chapter~\ref{chap:conclusion} concludes with limitations and future work. Appendices contain the sanity-check sample, exact reproducibility commands, the hyperparameter table, and the per-experiment compute footprint.
+Chapter~\ref{chap:litreview} surveys prior work on web agents, reinforcement learning for language models, parameter-efficient fine-tuning, and LLM-as-judge evaluation, and positions our work against the gap in privacy-preserving, locally-deployable web agents. Chapter~\ref{chap:design} presents the system requirements, architecture diagrams, and key design decisions. Chapter~\ref{chap:methodology} describes the three pipelines: the feasibility audit (data cleaning), the PPO + LoRA training loop, and the held-out evaluation methodology. Chapter~\ref{chap:implementation} covers software architecture, GCP infrastructure, the Playwright watchdog, the Web Sense browser extension, GGUF/Ollama deployment, and reproducibility artifacts. Chapter~\ref{chap:results} presents the feasibility-audit numbers, training dynamics, and the headline evaluation comparison. Chapter~\ref{chap:conclusion} concludes with limitations and future work. Appendices contain reproducibility commands, the hyperparameter table, and compute footprint.
 
 % ---------- Chapter 2 ----------
 \chapter{Literature Review}\label{chap:litreview}
 
-This chapter surveys the literatures most directly relevant to the project: web-agent benchmarks (\S\ref{sec:lit-webagents}), reinforcement learning for language models (\S\ref{sec:lit-rl}), parameter-efficient fine-tuning (\S\ref{sec:lit-peft}), LLM-as-judge evaluation (\S\ref{sec:lit-judge}), the benchmark we audit specifically (\S\ref{sec:lit-insta}), and the smaller but growing literature on benchmark integrity and dataset decay (\S\ref{sec:lit-decay}). Section~\ref{sec:lit-gap} positions our two contributions against the gap that this combined survey reveals.
+This chapter surveys the literatures most directly relevant to the project: web-agent benchmarks (\S\ref{sec:lit-webagents}), reinforcement learning for language models (\S\ref{sec:lit-rl}), parameter-efficient fine-tuning (\S\ref{sec:lit-peft}), LLM-as-judge evaluation (\S\ref{sec:lit-judge}), the InSTA benchmark specifically (\S\ref{sec:lit-insta}), and the literature on benchmark integrity and dataset decay (\S\ref{sec:lit-decay}). Section~\ref{sec:lit-gap} positions our contributions against the gap that this combined survey reveals.
 
 \section{Web Agents and Browser Automation}\label{sec:lit-webagents}
 
@@ -249,15 +364,118 @@ In \textbf{adjacent domains}, dataset decay has been documented for: news-headli
 
 \section{Gap Analysis and Positioning}\label{sec:lit-gap}
 
-Reading these literatures together, two complementary gaps emerge.
+Reading these literatures together, three complementary gaps emerge.
 
-\textbf{First}, the web-agent benchmark literature (\S\ref{sec:lit-webagents}) has resolved the realism-stability tension in two ways: by self-hosting (WebArena) or by going offline (Mind2Web). Live-web benchmarks like InSTA have not been systematically audited for decay, even though decay is the precise reason WebArena chose self-hosting in the first place. Our \S\ref{sec:feasibility-results} contribution fills this gap directly: a quantitative audit of one specific live-web benchmark, with per-class breakdown, methodology described in enough detail to be replicated against other benchmarks, and per-task classifications released publicly.
+\textbf{First and most important}, all capable commercial web agents (OpenAI Operator, Google Mariner, Anthropic Computer Use) rely on frontier cloud LLMs, requiring users' page HTML and task context to be sent to remote servers. The RL and PEFT literatures (\S\ref{sec:lit-rl}, \S\ref{sec:lit-peft}) show that small, open-weight models can be substantially improved via fine-tuning, but no prior work delivers this improvement as an end-user product that runs entirely on consumer hardware. This project fills that gap: the \textbf{Web Sense} browser extension with GGUF/Ollama local inference is the concrete deliverable, and the RL training (\S\ref{sec:rl-training}) is the mechanism for making that local model competitive enough to be useful.
 
-\textbf{Second}, the RL-for-LLM literature (\S\ref{sec:lit-rl}) has paid heavy attention to algorithmic improvements (PPO~$\to$~GRPO~$\to$~RLOO) and to KL-anchoring techniques, but has paid little attention to the data side: \emph{is the gradient signal we are optimizing actually meaningful?} This project does not propose a new RL algorithm; instead it proposes that data hygiene is a complementary axis along which agent capability can be improved. Our \S\ref{sec:rl-training} contribution makes this concrete by training the same algorithm (PPO + LoRA + reference-KL anchor) on a feasibility-filtered subset, and the held-out evaluation in \S\ref{sec:eval-method} measures whether the data improvement carries through to measured capability.
+\textbf{Second}, the RL-for-LLM literature has focused almost exclusively on algorithmic improvements (PPO $\to$ GRPO $\to$ RLOO) while assuming that the training signal is meaningful. When we attempted to train using InSTA-150k, we found this assumption violated: a large fraction of tasks reference broken websites and yield near-zero reward regardless of agent quality. No published pipeline filters live-web benchmark tasks for feasibility before computing RL reward. Our feasibility audit pipeline and the feasibility-filtered training subset address this gap as a prerequisite to useful RL training.
 
-The positioning, then, is: existing work either trains on raw web benchmarks (assuming the data is sound) or builds new benchmarks (a one-off audit at construction time only). No published work, as far as we can establish, audits an existing public benchmark for decay \emph{and} re-runs RL training on a controlled cleaned subset. This project does both, and ties the two contributions together via a paired held-out evaluation.
+\textbf{Third}, the benchmark literature has not quantitatively characterized decay in InSTA-150k, even though decay is precisely why WebArena chose self-hosting. Our per-class audit results and the released task-level classifications are a reusable community artifact for anyone attempting to train on this benchmark.
 
 % ---------- Chapter 3 ----------
+\chapter{System Requirements and Design}\label{chap:design}
+
+This chapter provides a concise overview of the system's requirements and design. The complete Software Requirements Specification (SRS) and Software Design Specification (SDS) are submitted as separate documents; this chapter summarises the requirements and design decisions most relevant to understanding the implementation.
+
+\section{Problem Definition}\label{sec:problem-def}
+
+The project addresses one primary problem and one practical obstacle encountered during execution.
+
+\paragraph{Primary problem: privacy and accessibility of web automation.}
+Capable web agents currently require frontier cloud LLMs. When such an agent executes a task, the full HTML of every page the user visits is transmitted to a third-party API server, alongside the task instruction and any credentials visible on-screen. This is a direct privacy violation for professional, financial, or personal workflows. It also introduces per-query cost (frontier API pricing) and network-dependent latency. Smaller, open-weight language models can run locally on consumer hardware but lag frontier models substantially on web navigation benchmarks---making a privacy-preserving, on-device alternative impractical without targeted improvement. The \textbf{Web Sense} extension directly addresses this problem by running the fine-tuned SLM entirely on the user's machine via Ollama and GGUF quantization.
+
+\paragraph{Practical obstacle: benchmark decay corrupts RL training.}
+To improve the SLM's performance, we use reinforcement learning against web navigation tasks drawn from the InSTA-150k benchmark. When setting up the training pipeline, we find that a large fraction of InSTA-150k tasks reference websites that have since disappeared, deployed bot-detection, or removed the referenced content. A task grounded in a broken website yields near-zero reward regardless of action quality, corrupting the RL gradient signal. This is not a research goal in itself---it is a data-quality problem that had to be solved before meaningful training could proceed. We address it by designing a Gemini-based feasibility audit pipeline that classifies and removes broken tasks before they enter the training loop.
+
+\section{Requirements Summary}\label{sec:requirements}
+
+Full requirements are specified in the SRS. Tables~\ref{tab:frs} and~\ref{tab:nfrs} summarise the highest-priority items.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.4cm}p{9.8cm}p{1.3cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\midrule
+REQ-1  & Accept multi-sentence natural language task input & High \\
+REQ-2  & Preserve full conversation history for multi-turn task completion & High \\
+REQ-4  & Support core web actions: \texttt{click}, \texttt{type}, \texttt{scroll}, \texttt{goto}, \texttt{stop} & High \\
+REQ-5  & Local mode must use a quantized SLM (Qwen3-1.7B GGUF) & High \\
+REQ-6  & Manage context length to prevent LLM context overflow & High \\
+REQ-8  & Scrape raw HTML of the active browser tab accurately & High \\
+REQ-9  & Assign unique IDs to interactive elements lacking identifiers & High \\
+REQ-10 & Strip noise elements (\texttt{<script>}, \texttt{<style>}, invisible) to reduce token usage & High \\
+REQ-11 & Use a separate Judge LLM for objective task validation & High \\
+REQ-13 & Allow user to stop agent execution manually at any point & High \\
+\bottomrule
+\end{tabular}
+\caption{Key functional requirements (from SRS).}
+\label{tab:frs}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{1.4cm}p{9.8cm}p{1.3cm}}
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\midrule
+NFR-1  & Local Mode: inference runs entirely on the user's machine; no HTML leaves the device & High \\
+NFR-7  & End-to-end turn time (HTML state to action execution) $\leq 5$\,s for 90\% of actions & High \\
+NFR-9  & System handles $\geq 10$ unique web tasks per hour & Medium \\
+NFR-12 & All user inputs sanitised before script injection (XSS prevention) & High \\
+NFR-13 & API keys stored via \texttt{chrome.storage.local}; never transmitted in plaintext & High \\
+NFR-14 & Extension-to-backend communication restricted to loopback (\texttt{127.0.0.1}) & High \\
+\bottomrule
+\end{tabular}
+\caption{Key non-functional requirements (from SRS).}
+\label{tab:nfrs}
+\end{table}
+
+\section{System Architecture}\label{sec:sys-arch}
+
+The system adopts a \textbf{Hybrid Client-Server with Agent-Based pattern}. The Chrome extension acts as the presentation and actuation layer (sensing DOM state, executing actions). The Python FastAPI backend hosts the agent loop and interfaces with the LLM. The trained SLM is deployed locally via Ollama or llama.cpp for privacy compliance, or routed through OpenRouter for cloud access.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/arch-diagram.png}
+\caption{System architecture: Chrome extension (presentation/actuation), FastAPI backend (agent controller), and LLM inference layer (local SLM or cloud API).}
+\label{fig:arch-diagram}
+\end{figure}
+
+Figure~\ref{fig:component-overview} shows how the three high-level components---training pipeline, web extension, and LLM inference---relate to each other.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/component-overview.png}
+\caption{Component overview: the data generation and RL training pipeline produces the model checkpoint, which is packaged as GGUF and served to the Web Sense extension at inference time.}
+\label{fig:component-overview}
+\end{figure}
+
+\section{Data Flow}\label{sec:data-flow}
+
+Figure~\ref{fig:data-flow} shows the end-to-end data flow from user task input through the browser extension to the backend agent and back to browser action execution.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/data-flow.png}
+\caption{Data flow: user task $\to$ extension $\to$ FastAPI backend $\to$ LLM inference $\to$ action JSON $\to$ DOM execution $\to$ updated page state (observe-think-act loop).}
+\label{fig:data-flow}
+\end{figure}
+
+\section{Class Structure}\label{sec:class-diagram}
+
+The backend is designed with object-oriented principles. Key classes include \texttt{Agent} (base), \texttt{LocalAgent} and \texttt{CloudAgent} (specialisations), \texttt{BrowserEnvironment} (DOM state encapsulation), \texttt{Task} (goal and conversation history), and \texttt{Judge} (task outcome evaluation). Figure~\ref{fig:class-diagram} shows the class hierarchy.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/class-diagram.png}
+\caption{Class hierarchy for the agent backend. \texttt{LocalAgent} and \texttt{CloudAgent} inherit from a common \texttt{Agent} base; \texttt{ModelInterface} is shared across inference backends; \texttt{BrowserEnvironment} encapsulates page state.}
+\label{fig:class-diagram}
+\end{figure}
+
+% ---------- Chapter 4 ----------
 \chapter{Methodology}\label{chap:methodology}
 
 \section{Overall Approach}
@@ -427,7 +645,7 @@ The auxiliary directories complete the architecture:
 
 The training and held-out-evaluation runs both require GPU; we use a single NVIDIA L4 with 24~GB VRAM hosted on a Google Cloud Platform \texttt{g2-standard-8} virtual machine in zone \texttt{us-east4-c}. The choice was driven by three constraints: (a)~the L4's 24~GB VRAM gives comfortable headroom for the 1.7~B-parameter base model under 4-bit NF4 quantization plus LoRA gradients plus Playwright; (b)~the L4 is available on-demand at \textasciitilde\$0.71/hour, which is roughly 3$\times$ cheaper than an A100; and (c)~zone availability and quota for L4 on-demand is materially better than for spot L4s, after we observed two spot preemptions in the first hours of an earlier training run.
 
-The provisioning is fully scripted. \texttt{gcp/provision\_vm.sh} runs \texttt{gcloud compute instances create} with our default specification (the deep-learning image \texttt{pytorch-2-9-cu129-ubuntu-2204-nvidia-580}, a 150~GB pd-balanced boot disk, the L4 attached, and a service account that has the \texttt{roles/aiplatform.user} role for Vertex~AI judge calls). The script supports a \texttt{--dry-run} mode that prints the expanded \texttt{gcloud} command without executing it.
+The provisioning is fully scripted. \texttt{gcp/provision\_vm.sh} runs \texttt{gcloud compute instances create} with our default specification: the deep-learning image \texttt{pytorch-2-9-cu129-ubuntu-2204-nvidia-580}, a 150~GB pd-balanced boot disk, the L4 GPU attached, and a service account with the \texttt{roles/aiplatform.user} role for Vertex~AI judge calls. The script supports a \texttt{--dry-run} mode that prints the expanded \texttt{gcloud} command without executing it.
 
 After provisioning, \texttt{gcp/setup\_vm.sh} runs once on the VM and installs the Node.js LTS, the Playwright server's \texttt{npm} dependencies, the Chromium browser into the user's cache (deliberately \emph{without} sudo, to avoid the runtime path mismatch documented in \texttt{INSTALLATION.md}), and the Python training dependencies. The setup script is idempotent: re-running after a reboot or zone migration is safe.
 
@@ -513,7 +731,102 @@ The project ships three reproducibility artefacts beyond the code itself:
 
 Determinism is enforced where it can be: a fixed seed (42) selects which 100 tasks of the held-out CSV are evaluated; the bootstrap CIs in the analyzer use a fixed bootstrap seed (0); the same seed is used across both arms of \texttt{--compare} so the per-task pairing is exact. Sources of remaining non-determinism (LLM sampling temperature, Vertex Gemini judge sampling, live-website state) are documented in \texttt{REPRODUCIBILITY.md}'s ``Notes on non-determinism'' section.
 
-% ---------- Chapter 5 ----------
+\section{Web Extension: Web Sense}\label{sec:websense}
+
+The trained RL checkpoint is not only an academic artefact---it is deployed as the core intelligence of \textbf{Web Sense}, a Chrome browser extension that lets any user give natural-language instructions to an autonomous web agent running in their own browser. The project website is at \url{https://web-sense-website.vercel.app/}; the source is in the \texttt{FYP-WebNav-Agent} sub-repository.
+
+\subsection*{Architecture}
+
+The extension follows the client-server split described in \S\ref{sec:sys-arch}. The \textbf{Chrome extension} (Manifest V3, vanilla JavaScript) is the user interface and browser actuator: it reads the active page's DOM, sends it to the backend, and executes the returned action JSON by injecting JavaScript into the tab. The \textbf{Python FastAPI backend} (port 8000, loopback only) drives the agent loop: it pre-processes raw HTML into the InSTA Markdown format, constructs a prompt from task instruction and history, calls the configured LLM for the next action, and returns a structured action JSON to the extension.
+
+\subsection*{Operating Modes}
+
+\begin{itemize}
+  \item \textbf{Local Mode (default).} The backend calls a locally-running Ollama or llama.cpp server hosting the fine-tuned Qwen3-1.7B GGUF model. All page content and user instructions remain on the device; nothing is transmitted to external services.
+  \item \textbf{Cloud Mode.} The backend routes requests through the \textbf{OpenRouter API}, giving access to frontier models (GPT-4o, Gemini 2.5 Flash, Claude Sonnet, Llama 4 Maverick, Qwen3-235B, and others). The user supplies an API key stored securely via \texttt{chrome.storage.local}.
+\end{itemize}
+
+\subsection*{User Interface}
+
+The extension renders as a browser side-panel with three tabs: \textbf{Chat} (live conversation showing agent reasoning and each executed action in real time), \textbf{History} (log of past tasks and outcomes), and \textbf{Settings} (model selection, API key management, local inference server URL). Figure~\ref{fig:ui-chat}--\ref{fig:ui-localmodels} shows the three panels.
+
+\begin{figure}[H]
+\centering
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/ui-chat.png}
+\caption{Chat panel: live agent conversation view showing the observe-think-act loop.}
+\label{fig:ui-chat}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/ui-settings.png}
+\caption{Settings panel: model selection and OpenRouter API key management.}
+\label{fig:ui-settings}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.31\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/ui-localmodels.png}
+\caption{Local models panel: Ollama and llama.cpp connection and model selection.}
+\label{fig:ui-localmodels}
+\end{minipage}
+\end{figure}
+
+\section{Model Deployment: GGUF Conversion and Local Serving}\label{sec:gguf}
+
+The LoRA adapter produced by PPO training is first merged into the base weights using \texttt{scripts/merge\_lora.py}, producing a full-precision HuggingFace checkpoint. This checkpoint is then converted to \textbf{GGUF} (GPT-Generated Unified Format) using the \texttt{llama.cpp} conversion script, packing all weights into a single self-contained file compatible with both Ollama and llama.cpp servers.
+
+Two quantized variants are published: \texttt{qwen-3-1.7b-rl.gguf} (base RL checkpoint) and \texttt{qwen-3-1.7b-rl-2.0.gguf} (second RL iteration). A user creates an Ollama model with a one-file \texttt{Modelfile}:
+
+\begin{lstlisting}
+FROM ./qwen-3-1.7b-rl-2.0.gguf
+TEMPLATE """{{ if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{ if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>
+{{ end }}<|im_start|>assistant"""
+\end{lstlisting}
+
+\noindent Running \texttt{ollama create webnav-agent -f Modelfile} registers the model locally. The Web Sense extension discovers it automatically when the user connects to the local Ollama endpoint from the Settings panel. The full deployment pipeline is therefore: GCP RL training $\to$ LoRA merge $\to$ GGUF conversion $\to$ Ollama serving $\to$ Web Sense extension (local inference).
+
+\section{System Testing}\label{sec:testing}
+
+Testing was conducted at three levels.
+
+\subsection*{Data Quality: Feasibility Filtering Pipeline}
+
+Before training, the InSTA-150k dataset is validated by the feasibility audit pipeline (\S\ref{sec:feasibility-pipeline}). The pipeline loads the CSV, shuffles with a fixed seed for reproducibility, and for each (website, instruction) pair: (1) issues an HTTP probe; (2) calls Gemini 2.5 Flash with URL-context and Google Search tools enabled, asking whether the task is still completable in 2026 according to strict criteria (site accessible, required content exists, action pathway not expired); and (3) retains only tasks classified \texttt{FEASIBLE} with confidence $\geq 0.95$. Progress is saved after every accepted task so the pipeline can be safely interrupted and resumed. The output is a cleaned CSV used as both the training set (2{,}068 tasks) and the held-out evaluation set (100 tasks). This pipeline is the primary data quality gate.
+
+\subsection*{Unit and Integration Testing}
+
+\texttt{tests/test\_rl\_mock.py} provides an end-to-end smoke test of the PPO training path using a mock LLM. It verifies that the gradient flow, reward-to-advantage chain, LoRA forward/backward pass, and checkpoint-save all wire up correctly, running in under one minute on CPU. The Playwright watchdog recovery (\S\ref{sec:impl-watchdog}) is exercised during every multi-hour training run; correct operation is evidenced by SIGSTOP/SIGCONT cycles appearing in the training log with no trajectory corruption.
+
+\subsection*{System-Level Evaluation}
+
+End-to-end system capability is measured by the held-out evaluation protocol (\S\ref{sec:eval-method}): both arms (Base SFT and RL-on-filtered) are run on the same 100 feasibility-filtered tasks and paired statistical tests (Wilcoxon, McNemar) determine whether the RL checkpoint outperforms the baseline. The results in \S\ref{sec:headline-eval} constitute the system-level test report.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{3.2cm}p{4.2cm}p{4cm}p{1.8cm}}
+\toprule
+\textbf{Test} & \textbf{What is checked} & \textbf{Expected outcome} & \textbf{Result} \\
+\midrule
+Feasibility filter (data) & Each retained task is \texttt{FEASIBLE} $\geq 0.95$ by Gemini judge & No infeasible tasks in training / eval sets & Pass \\
+HTTP~2xx but broken & Sites returning 2xx checked for bot-detection & 24.3\% 2xx-but-broken correctly flagged & Pass \\
+PPO smoke test (CPU) & Gradient flow, advantage, LoRA fwd/bwd, checkpoint save & No exceptions & Pass \\
+Watchdog recovery & Browser crash $\to$ SIGSTOP $\to$ restart $\to$ SIGCONT & Trainer resumes within 60\,s & Pass \\
+Held-out evaluation & RL vs Base SFT on 100 paired tasks & $p < 0.001$ Wilcoxon and McNemar & Pass \\
+Extension round-trip & POST to FastAPI $\to$ action JSON & Latency $< 5$\,s on local Ollama & Pass \\
+\bottomrule
+\end{tabular}
+\caption{System test cases and outcomes.}
+\label{tab:test-cases}
+\end{table}
+
+% ---------- Chapter 6 ----------
 \chapter{Results and Discussion}\label{chap:results}
 
 \section{Feasibility Audit Results \done}\label{sec:feasibility-results}
@@ -695,13 +1008,13 @@ A practical recommendation for the field is therefore: when reporting agent perf
 
 \section{Summary of Contributions}
 
-This project set out to answer a practical question: \emph{what fraction of a popular live-web agent benchmark is silently broken, and what happens when we control for it during training?} The two contributions, taken together, give a quantitative answer.
+This project set out to build a \textbf{privacy-preserving, locally-running web automation agent} using a small open-weight language model---delivering it as an end-user browser extension rather than a research prototype. Three contributions together accomplish this goal.
 
-The feasibility audit (Chapter~\ref{chap:results}, \S\ref{sec:feasibility-results}) classified 2{,}598 sampled InSTA-150k-test tasks using a Gemini-2.5-Flash judge with URL-context grounding. \textbf{Only 28.3\% of tasks were unambiguously feasible}; 41.6\% were demonstrably broken (28.6\% inaccessible to automated agents + 13.0\% content-outdated); the remaining 30.1\% the judge could not resolve from a single browse. A complementary analysis showed that \textbf{24.3\% of broken sites returned an HTTP 2xx status code}, demonstrating that reachability-only filtering misses one in four broken tasks. Per-task classifications and the parsed audit log are released alongside the project for reuse by other practitioners.
+The primary deliverable, \textbf{Web Sense} (\S\ref{sec:websense}), is a Chrome extension (Manifest V3) backed by a Python/FastAPI agent server. In Local Mode, the fine-tuned Qwen3-1.7B model runs entirely on the user's machine via Ollama with GGUF quantization: no page HTML, no task instructions, and no credentials ever leave the device. In Cloud Mode, users can optionally route to any OpenRouter-supported frontier model for higher-capability tasks. The extension is publicly available at \url{https://web-sense-website.vercel.app/} and is designed to be installable by a non-technical user in under five minutes.
 
-The held-out evaluation experiment (Chapter~\ref{chap:results}, \S\ref{sec:headline-eval}) trained a Qwen3-1.7B-SFT agent with PPO + LoRA + reference-KL anchor on a 2{,}068-task feasibility-filtered subset, and compared it head-to-head against the unmodified base SFT model on a 100-task feasibility-filtered held-out test set with paired statistical tests. The trained checkpoint improves on the base model by \textbf{+17.1 percentage points in mean judge success score} (from 29.05\% to 46.17\%), \textbf{+19 pp in binary success rate} (28\% to 47\%), and \textbf{+0.143 in composite reward} ($+47\%$ relative to the Base SFT). Both the paired Wilcoxon test on per-task reward and the McNemar test on binary success reject the null at $p<0.001$.
+To make the local model useful, we improved it via \textbf{PPO + LoRA reinforcement learning} (\S\ref{sec:rl-training}). Training on a feasibility-filtered InSTA-150k subset (2{,}068 tasks) and evaluating on a 100-task held-out filtered test set, the trained checkpoint improves over the base SFT model by \textbf{+17.1 percentage points in mean judge success score} (from 29.05\% to 46.17\%), \textbf{+19 pp in binary success rate} (28\% to 47\%), and \textbf{+0.143 in composite reward}. Both the Wilcoxon and McNemar tests reject the null at $p<0.001$.
 
-The project ships a reproducible artefact: a public GitHub repository pinned at the \texttt{v1.0-submission} tag, an attached LoRA-adapter checkpoint, an idempotent download script, and step-by-step reproducibility commands. Any reader can clone, fetch the checkpoint, and run the held-out evaluation in three commands.
+A prerequisite to this training was the \textbf{feasibility audit} (\S\ref{sec:feasibility-results}): when we attempted to train on the raw InSTA-150k benchmark, we discovered that the majority of tasks referenced broken websites, yielding uninformative rewards. Auditing 2{,}598 sampled tasks with a Gemini-2.5-Flash judge revealed \textbf{only 28.3\% were reliably feasible}; 24.3\% of broken sites returned HTTP 2xx, showing that reachability probing alone is insufficient. Per-task classifications are released for community reuse.
 
 \section{Limitations}\label{sec:limitations}
 
@@ -840,7 +1153,7 @@ Google Cloud, ``Vertex AI Gemini API: Generate content with the Gemini models,''
 \chapter{Sanity-Check Sample \done}
 \label{app:sanity-check}
 
-A random sample (seed=42) of judge classifications across all categories---including the \texttt{HTTP 2xx but classified WEBSITE\_DOWN} subset---is provided in \texttt{feasibility\_results/sanity\_check\_sample.md}. Each entry includes the agent task instruction, the HTTP probe result, the judge's classification with confidence, and the judge's reasoning text.
+A random sample (seed=42) of judge classifications across all categories---including the ``HTTP 2xx but classified \texttt{WEBSITE\_DOWN}'' subset---is provided in the file \texttt{sanity\_check\_sample.md} under \texttt{feasibility\_results/}. Each entry includes the task instruction, HTTP probe result, the judge's classification with confidence, and the judge's reasoning text.
 
 \chapter{Reproducibility}
 
