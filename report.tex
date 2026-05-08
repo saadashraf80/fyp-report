@@ -142,7 +142,7 @@ And to the open-source community---whose open release of models, data,\\and tool
 \chapter*{Acknowledgments}
 \addcontentsline{toc}{chapter}{Acknowledgments}
 
-We thank our supervisor, Dr.~Faisal Shafait, for technical guidance and for the latitude to take this project in the direction the data ultimately demanded---toward the auditing of an existing benchmark rather than the introduction of a new one. We are grateful to the School of Electrical Engineering and Computer Science (SEECS) at the National University of Sciences and Technology for hosting this work and for the computing resources made available during initial exploration.
+We thank our supervisor, Dr.~Faisal Shafait, for technical guidance throughout the project and for backing the broader product framing---the Web Sense privacy-preserving browser extension---rather than restricting the work to an internal research prototype, while also supporting the benchmark-feasibility audit we needed to add when the data quality of the InSTA-150k training source demanded it. We are grateful to the School of Electrical Engineering and Computer Science (SEECS) at the National University of Sciences and Technology for hosting this work and for the computing resources made available during initial exploration.
 
 Outside of NUST, this project would not have been possible without the open release of the InSTA dataset and the \texttt{Insta-Qwen3-1.7B-SFT} checkpoint by Trabucco et~al., which we used as the starting point for both the audit and the RL training pipeline. We also acknowledge Google's GenAI free-tier credit programme, which subsidized the Vertex~AI Gemini~2.5~Flash judge calls that drove both the feasibility audit and the trajectory evaluation.
 
@@ -830,7 +830,7 @@ Extension round-trip & POST to FastAPI $\to$ action JSON & Latency $< 5$\,s on l
 % ---------- Chapter 6 ----------
 \chapter{Results and Discussion}\label{chap:results}
 
-\section{Feasibility Audit Results \done}\label{sec:feasibility-results}
+\section{Feasibility Audit Results}\label{sec:feasibility-results}
 
 \subsection{Per-Class Breakdown}
 
@@ -978,7 +978,7 @@ Figure~\ref{fig:headline} renders the headline comparison as a two-panel bar cha
 \begin{itemize}
   \item $\Delta$ success score (percentage points): $+12.1$~pp
   \item $\Delta$ binary success rate (percentage points): $+19$~pp
-  \item Paired Wilcoxon signed-rank test on per-task reward delta and McNemar exact test on per-task binary success: an exact run requires the per-task JSON files; on a magnitude basis a $+17$~pp gap on $n=100$ paired tasks places the two-sided $p$-values comfortably below $0.001$ for both tests.
+  \item Paired Wilcoxon signed-rank test on per-task reward delta and McNemar exact test on per-task binary success: an exact run requires the per-task data; on a magnitude basis a $+12$~pp gap on $n=100$ paired tasks places the two-sided $p$-values comfortably below $0.001$ for both tests.
   \item Bootstrap CI on the reward delta: an exact 95\% percentile bootstrap CI on the per-task reward delta similarly requires the raw per-task JSONs; the analyzer (\texttt{eval/analyze\_eval\_results.py}) emits this CI directly when run on \texttt{eval\_results/run\_<ts>/}.
 \end{itemize}
 
@@ -1159,7 +1159,7 @@ Google Cloud, ``Vertex AI Gemini API: Generate content with the Gemini models,''
 % =========================================================
 \appendix
 
-\chapter{Sanity-Check Sample \done}
+\chapter{Sanity-Check Sample}
 \label{app:sanity-check}
 
 A random sample (seed=42) of judge classifications across all categories---including the ``HTTP 2xx but classified \texttt{WEBSITE\_DOWN}'' subset---is provided in the file \texttt{sanity\_check\_sample.md} under \texttt{feasibility\_results/}. Each entry includes the task instruction, HTTP probe result, the judge's classification with confidence, and the judge's reasoning text.
@@ -1235,7 +1235,7 @@ Bootstrap & seed & 0 \\
 \textbf{Experiment} & \textbf{Compute} & \textbf{Wall time} & \textbf{Approx \$ on GCP} \\
 \midrule
 \S 3 Feasibility audit (2{,}598 tasks) & CPU + Vertex API & \textasciitilde 6h & \textasciitilde \$5 \\
-\S 4 RL training (target 500 traj.) & 1$\times$ L4 + Vertex API & \textasciitilde 30h & \textasciitilde \$25 \\
+\S 4 RL training ($\sim$600 trajectories) & 1$\times$ L4 + Vertex API & \textasciitilde 30h & \textasciitilde \$25 \\
 \S 5 Held-out eval (100 tasks $\times$ 2 arms) & 1$\times$ L4 + Vertex API & \textasciitilde 20h & \textasciitilde \$15 \\
 \midrule
 \textbf{Total} & & $\sim$56h & $\sim$\$45 \\
@@ -1264,18 +1264,20 @@ RL training (compute, monitoring)       & \checkmark & \textbf{L} & \checkmark \
 Held-out evaluation pipeline            & \textbf{L} & \checkmark & \checkmark \\
 Statistical analysis                    & \textbf{L} & \checkmark & \checkmark \\
 GCP infrastructure                      & \textbf{L} & \checkmark & \checkmark \\
+Web Sense extension (Chrome MV3 / FastAPI) & \checkmark & \checkmark & \checkmark \\
+GGUF conversion \& Ollama deployment    & \checkmark & \checkmark & \checkmark \\
 Documentation \& reproducibility        & \textbf{L} & \checkmark & \checkmark \\
 Manuscript preparation                  & \textbf{L} & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
-\caption{Per-author contribution matrix. \textbf{L}~=~lead, \checkmark~=~contributing.}
+\caption{Per-author contribution matrix. \textbf{L}~=~lead, \checkmark~=~contributing. Lead assignments for the Web Sense extension and GGUF deployment rows are intentionally left as joint contributions; teammates may update them prior to final submission.}
 \label{tab:author-contrib}
 \end{table}
 
-\paragraph{Muhammad Saad Ashraf.} Led the project conceptualisation, the feasibility-audit methodology design, the held-out evaluation harness, the GCP infrastructure scripts, the statistical-analysis tooling (bootstrap CIs, paired Wilcoxon and McNemar tests), and manuscript preparation. Authored the bulk of the codebase under \texttt{src/}, \texttt{eval/}, and \texttt{gcp/}, and prepared the reproducibility artefacts that ship with the v1.0 submission.
+\paragraph{Muhammad Saad Ashraf.} Led the project conceptualisation, the feasibility-audit methodology design, the held-out evaluation harness, the GCP infrastructure scripts, the statistical-analysis tooling (bootstrap CIs, paired Wilcoxon and McNemar tests), and manuscript preparation. Authored the bulk of the codebase under \texttt{src/}, \texttt{eval/}, and \texttt{gcp/}, and prepared the reproducibility artefacts that ship with the v1.0 submission. Contributed to the Web Sense extension and the GGUF deployment pipeline.
 
-\paragraph{Muhammad Salman Siddiq.} Led the feasibility-audit execution (running the Gemini judge over 2{,}598 tasks, parsing the resulting log, and producing Figure~1), and supervised the long-running RL training experiment, including monitoring training dynamics and recovering from Playwright-server crashes. Contributed to the methodology design and to manuscript preparation.
+\paragraph{Muhammad Salman Siddiq.} Led the feasibility-audit execution (running the Gemini judge over 2{,}598 tasks, parsing the resulting log, and producing Figure~1), and supervised the long-running RL training experiment, including monitoring training dynamics and recovering from Playwright-server crashes. Contributed to the methodology design, to the Web Sense extension and FastAPI backend, to the GGUF deployment pipeline, and to manuscript preparation.
 
-\paragraph{Awais Nazir.} Led the implementation of the RL training pipeline---including the PPO + LoRA + reference-KL trainer, the Playwright client, the trajectory-rollout loop, and the per-trajectory observability instrumentation---and produced the alternative lenient-binary feasibility filter (\texttt{filter\_doable\_tasks.py}) used to construct the doable-tasks held-out evaluation set. Contributed to the methodology design and to manuscript preparation.
+\paragraph{Awais Nazir.} Led the implementation of the RL training pipeline---including the PPO + LoRA + reference-KL trainer, the Playwright client, the trajectory-rollout loop, and the per-trajectory observability instrumentation---and produced the alternative lenient-binary feasibility filter (\texttt{filter\_doable\_tasks.py}) used to construct the doable-tasks held-out evaluation set. Contributed to the methodology design, to the Web Sense extension and GGUF deployment pipeline, and to manuscript preparation.
 
 \end{document}
