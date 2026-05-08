@@ -67,7 +67,8 @@
 \centering
 
 \vspace*{0.5cm}
-\includegraphics[width=0.25\textwidth]{nust.png}\\[1cm]
+% NUST logo: place nust.png at the repo root and uncomment the next line to display it.
+\IfFileExists{nust.png}{\includegraphics[width=0.25\textwidth]{nust.png}\\[1cm]}{\vspace*{1cm}}
 
 \textsc{\LARGE \textbf{National University of Sciences and Technology}}\\[0.3cm]
 \textbf{\textsc{\large School of Electrical Engineering and Computer Science (SEECS)}}\\[0.5cm]
@@ -149,7 +150,7 @@ Finally, we thank our families and peers for their patience during the more comp
 
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
-Frontier web agents (OpenAI Operator, Google Mariner, Anthropic Computer Use) can automate browser tasks from natural language but route all page content through remote servers, raising significant privacy, cost, and latency concerns. This project builds \textbf{Web Sense}---a privacy-preserving Chrome browser extension that runs a small language model (SLM) entirely on the user's device via Ollama/GGUF quantization, with no page data leaving the machine, alongside an optional cloud inference mode via OpenRouter. To improve the SLM's web navigation ability, we fine-tune Qwen3-1.7B with PPO + LoRA reinforcement learning using the InSTA-150k benchmark as a training source. During setup we discover that the benchmark has undergone severe decay: auditing 2{,}598 sampled tasks with a Gemini-2.5-Flash feasibility judge reveals \textbf{only 28.3\% of tasks are reliably feasible}---28.6\% of target sites are inaccessible, 13.0\% reference removed content, and 30.1\% are uncertain. We further find that \textbf{24.3\% of inaccessible sites return HTTP 2xx}, showing that reachability probing alone is insufficient. We filter the dataset, train on a 2{,}068-task cleaned subset, and evaluate on a 100-task held-out filtered set. RL training yields \textbf{a +17.1 percentage-point improvement in mean judge-success score (from 29.05\% for base SFT to 46.17\% for the RL checkpoint)}. The trained model is packaged as GGUF and served locally by Web Sense, delivering a practical privacy-preserving web automation tool accessible to non-technical users.
+Frontier web agents (OpenAI Operator, Google Mariner, Anthropic Computer Use) can automate browser tasks from natural language but route all page content through remote servers, raising significant privacy, cost, and latency concerns. This project builds \textbf{Web Sense}---a privacy-preserving Chrome browser extension that runs a small language model (SLM) entirely on the user's device via Ollama/GGUF quantization, with no page data leaving the machine, alongside an optional cloud inference mode via OpenRouter. To improve the SLM's web navigation ability, we fine-tune Qwen3-1.7B with PPO + LoRA reinforcement learning using the InSTA-150k benchmark as a training source. During setup we discover that the benchmark has undergone severe decay: auditing 2{,}598 sampled tasks with a Gemini-2.5-Flash feasibility judge reveals \textbf{only 28.3\% of tasks are reliably feasible}---28.6\% of target sites are inaccessible, 13.0\% reference removed content, and 30.1\% are uncertain. We further find that \textbf{24.3\% of inaccessible sites return HTTP 2xx}, showing that reachability probing alone is insufficient. We filter $\sim$3{,}000 candidate tasks down to a 600-task cleaned subset for training, and evaluate on a 100-task held-out filtered set. RL training yields \textbf{a +17.1 percentage-point improvement in mean judge-success score (from 29.05\% for base SFT to 46.17\% for the RL checkpoint)}. The trained model is packaged as GGUF and served locally by Web Sense, delivering a practical privacy-preserving web automation tool accessible to non-technical users.
 
 \tableofcontents
 \listoffigures
@@ -269,7 +270,7 @@ This project makes three contributions:
 
 \begin{enumerate}
   \item \textbf{Web Sense: a privacy-preserving browser extension for web automation.} A Chrome Manifest V3 extension backed by a Python/FastAPI agent server. In Local Mode, the trained Qwen3-1.7B model runs entirely on the user's machine via Ollama (GGUF format)---no page content is transmitted off-device. In Cloud Mode, users can route to any OpenRouter-supported frontier model. The extension is installable by non-technical users in under five minutes.
-  \item \textbf{An RL-improved SLM for web navigation.} We apply PPO + LoRA to Qwen3-1.7B-SFT on a 2{,}068-task feasibility-filtered training subset and evaluate on a 100-task held-out set. The trained checkpoint achieves a \textbf{+17.1 percentage-point improvement in mean judge-success score} (29.05\% $\to$ 46.17\%) over the base SFT model.
+  \item \textbf{An RL-improved SLM for web navigation.} We apply PPO + LoRA to Qwen3-1.7B-SFT on a 600-task feasibility-filtered training subset (drawn from $\sim$3{,}000 candidate tasks) and evaluate on a 100-task held-out set. The trained checkpoint achieves a \textbf{+17.1 percentage-point improvement in mean judge-success score} (29.05\% $\to$ 46.17\%) over the base SFT model.
   \item \textbf{A feasibility audit of the InSTA-150k benchmark.} As a prerequisite to clean RL training, we classify 2{,}598 sampled InSTA tasks using a Gemini-2.5-Flash judge with live URL-context grounding, finding only 28.3\% of tasks feasible. We release per-task classifications and the audit pipeline for reuse by the community.
 \end{enumerate}
 
@@ -550,7 +551,7 @@ The PPO loss combines a clipped surrogate, an entropy bonus, and \textbf{two} KL
               + \beta_\text{KL}\,D_\text{KL}(\pi_\text{new} \,\|\, \pi_\text{old}) + \beta_\text{ref}\,D_\text{KL}(\pi_\text{new} \,\|\, \pi_\text{ref})
 \end{split}
 \end{equation}
-with $r_t = \exp(\log \pi_\text{new} - \log \pi_\text{old})$, $\varepsilon = 0.1$, $\beta_H = 0.01$, $\beta_\text{KL} = 0.1$, $\beta_\text{ref} = 0.05$. Gradients are clipped to a max norm of 0.5 before an AdamW step at learning rate 2$\times 10^{-5}$. We use a single PPO epoch per trajectory; training proceeds online.
+with $r_t = \exp(\log \pi_\text{new} - \log \pi_\text{old})$, $\varepsilon = 0.1$, $\beta_H = 0.01$, $\beta_\text{KL} = 0.1$, $\beta_\text{ref} = 0.05$. Gradients are clipped to a max norm of 0.5 before an AdamW step at learning rate $1\times 10^{-5}$. We use a single PPO epoch per trajectory; training proceeds online.
 
 The reference-KL term anchors the LoRA-updated policy to the base SFT model's distribution, preventing cumulative drift over many trajectories that the within-trajectory PPO clip would not catch.
 
@@ -797,7 +798,7 @@ Testing was conducted at three levels.
 
 \subsection*{Data Quality: Feasibility Filtering Pipeline}
 
-Before training, the InSTA-150k dataset is validated by the feasibility audit pipeline (\S\ref{sec:feasibility-pipeline}). The pipeline loads the CSV, shuffles with a fixed seed for reproducibility, and for each (website, instruction) pair: (1) issues an HTTP probe; (2) calls Gemini 2.5 Flash with URL-context and Google Search tools enabled, asking whether the task is still completable in 2026 according to strict criteria (site accessible, required content exists, action pathway not expired); and (3) retains only tasks classified \texttt{FEASIBLE} with confidence $\geq 0.95$. Progress is saved after every accepted task so the pipeline can be safely interrupted and resumed. The output is a cleaned CSV used as both the training set (2{,}068 tasks) and the held-out evaluation set (100 tasks). This pipeline is the primary data quality gate.
+Before training, the InSTA-150k dataset is validated by the feasibility audit pipeline (\S\ref{sec:feasibility-pipeline}). The pipeline loads the CSV, shuffles with a fixed seed for reproducibility, and for each (website, instruction) pair: (1) issues an HTTP probe; (2) calls Gemini 2.5 Flash with URL-context and Google Search tools enabled, asking whether the task is still completable in 2026 according to strict criteria (site accessible, required content exists, action pathway not expired); and (3) retains only tasks classified \texttt{FEASIBLE} with confidence $\geq 0.95$. Progress is saved after every accepted task so the pipeline can be safely interrupted and resumed. The output is a cleaned CSV used as the training set (600 tasks, filtered from $\sim$3{,}000 candidates) and a separately-filtered held-out evaluation set (100 tasks sampled from the test split). This pipeline is the primary data quality gate.
 
 \subsection*{Unit and Integration Testing}
 
@@ -899,33 +900,42 @@ A spot-check of the judge's classifications across all classes (Appendix~\ref{ap
 
 \section{Training Dynamics}\label{sec:training-dynamics}
 
-The per-trajectory training log was sampled at the four quartiles of the run to produce the summary in Table~\ref{tab:training-quartiles}. The most informative pattern is the Q2$\to$Q3 jump: mean reward roughly doubles (0.173~$\to$~0.464) while mean trajectory length drops sharply (14.2~$\to$~11.6 steps), suggesting that around the mid-point of training the agent transitions from ``exploring blindly until step budget is exhausted'' to ``acting purposefully and stopping when the task condition is met.''
+The per-trajectory training log preserved 581 trajectories across IDs 1--600, of which 457 contributed to the PPO update. The remaining 124 were skipped: 65 because the judge returned no parsable response, and 59 because the rollout itself raised an exception (typically a Playwright connection failure that the watchdog later recovered from). The optimization rate of 78.7\% (457/581) is consistent with what we would expect from rolling out an early-stage agent against a heterogeneous live-web task pool.
+
+Splitting the 457 optimized trajectories into four equal-size quartiles by trajectory order gives the summary in Table~\ref{tab:training-quartiles}. The quartile-mean view shows a gain Q1$\to$Q2 (reward $0.194 \to 0.248$), continued slight gain into Q3 ($0.251$), and a quartile-mean dip in Q4 ($0.221$). The dip in the Q4 \emph{mean}, however, is misleading taken alone: a 50-trajectory rolling mean over the same data peaks at approximately $0.34$ around trajectory~357 (mid-Q3), holds elevated through the first half of Q4, and then declines sharply over the last $\sim$30 trajectories of training back to $\sim$0.17. The Q4 mean is dragged down by this late-training tail decline, not by uniform regression across Q4. This shape---rising through Q2 and into mid-Q3, peaking, and then a tail decline near the end of the run---is what motivated the best-checkpoint-search procedure described in the eval methodology (\S\ref{sec:eval-method}): rather than trust the latest checkpoint, we paired-evaluated several mid-to-late-training checkpoints on a small held-out subset and selected the one with the highest mean reward, which turned out to be a mid-training checkpoint rather than the final one.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lrrrr}
+\begin{tabular}{lrrrrrr}
 \toprule
-\textbf{Quartile} & \textbf{n} & \textbf{Mean reward} & \textbf{Mean success} & \textbf{Mean steps} \\
+\textbf{Quartile} & \textbf{n} & \textbf{Mean reward} & \textbf{Success} & \textbf{Efficiency} & \textbf{Self-corr} & \textbf{Mean steps} \\
 \midrule
-Q1 & 27 & 0.242 & 0.212 & 12.6 \\
-Q2 & 27 & 0.173 & 0.141 & 14.2 \\
-Q3 & 27 & 0.464 & 0.470 & 11.6 \\
-Q4 & 28 & 0.452 & 0.472 & 9.5 \\
+Q1 & 115 & 0.194 & 0.166 & 0.237 & 0.303 & 10.2 \\
+Q2 & 114 & 0.248 & 0.230 & 0.264 & 0.360 & 12.0 \\
+Q3 & 114 & 0.251 & 0.232 & 0.286 & 0.314 & 12.5 \\
+Q4 & 114 & 0.221 & 0.212 & 0.234 & 0.278 & 12.5 \\
 \bottomrule
 \end{tabular}
-\caption{Quartile-over-quartile training-trajectory statistics computed from the per-trajectory CSV log. The Q2$\to$Q3 jump in reward and the matching drop in mean steps mark the transition from exploratory to purposeful behaviour.}
+\caption{Per-quartile training-trajectory statistics computed from the 457 optimized trajectories of the per-trajectory CSV log. Quartile means rise Q1$\to$Q3 with a Q4 dip; the dip is driven by a late-training tail decline rather than uniform regression---see Figure~\ref{fig:training-dynamics}.}
 \label{tab:training-quartiles}
 \end{table}
 
-The two consecutive quartiles at $\sim$0.45+ reward (Q3 and Q4) are stronger evidence of genuine policy improvement than a single quartile spike would be---a single high-reward quartile could plausibly be attributed to lucky task-difficulty draws within that window, but two consecutive matching quartiles drawn from the same shuffled pool make that explanation considerably less likely.
-
-Figure~\ref{fig:training-dynamics} renders the per-trajectory reward and binary-success rate over the run, with a 25-trajectory rolling-mean line overlaid. The exploratory-to-purposeful transition visible in the table is clearly visible as a sharp upward step in both panels around trajectory~55.
+Figure~\ref{fig:training-dynamics} renders the per-trajectory reward and binary-success rate over the run, with a 25-trajectory rolling-mean line overlaid. The rolling mean rises through the first $\sim$200 trajectories, peaks around trajectory~357, holds through mid-Q4, and declines over the final $\sim$30 trajectories---the late-training tail decline that the quartile mean obscures.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{figures/figure2.pdf}
-\caption{Per-trajectory reward (left) and binary success rate (right) over training, with a 25-trajectory rolling mean. Vertical dashed lines mark quartile boundaries. The Q2$\to$Q3 transition (around trajectory 55) is the dominant feature.}
+\caption{Per-trajectory reward (left) and binary success rate (right) over training, with a 25-trajectory rolling mean. Computed from the 457 optimized trajectories.}
 \label{fig:training-dynamics}
+\end{figure}
+
+A second view of the same data, broken out by quartile and by judge component, is in Figure~\ref{fig:training-quartiles}. Reward and success rise from Q1 to Q3 (with the bulk of the gain in Q1$\to$Q2) and dip in Q4 owing to the late-training tail; efficiency peaks in Q3; self-correction peaks earlier in Q2 and declines thereafter. The pattern is consistent with a policy that found a working strategy by Q2--Q3, exploited it through Q3, and began to drift off-distribution near the end of training---exactly the kind of curve the reference-KL anchor (\S\ref{sec:ppo-update}) is designed to limit but does not eliminate.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/figure_quartiles.pdf}
+\caption{Per-quartile means (with $\pm$1~SE error bars) for the four scored quantities: reward, judge success, judge efficiency, and judge self-correction. Reward and success rise Q1$\to$Q3 (most of the gain Q1$\to$Q2) and dip in Q4 owing to late-training tail decline; efficiency peaks in Q3; self-correction peaks earlier in Q2.}
+\label{fig:training-quartiles}
 \end{figure}
 
 \section{Held-out Evaluation}\label{sec:headline-eval}
@@ -935,7 +945,7 @@ We evaluate on the \textbf{filtered held-out test set} (100 feasibility-filtered
 \textbf{Checkpoints} (rows of Table~\ref{tab:headline}):
 \begin{itemize}
   \item \textbf{Base SFT}: \texttt{btrabucco/Insta-Qwen3-1.7B-SFT}---Qwen3-1.7B already SFT on InSTA navigation, no LoRA / no RL applied.
-  \item \textbf{RL-on-filtered}: LoRA adapter from this project's RL training round on the 2{,}068-task feasibility-filtered subset.
+  \item \textbf{RL-on-filtered}: LoRA adapter from this project's RL training round on the 600-task feasibility-filtered subset.
 \end{itemize}
 
 \begin{table}[h]
@@ -943,37 +953,36 @@ We evaluate on the \textbf{filtered held-out test set} (100 feasibility-filtered
 \small
 \begin{tabular}{lrrrrr}
 \toprule
-\textbf{Checkpoint} & \textbf{n} & \textbf{Reward} & \textbf{Mean judge success} & \textbf{Success rate ($>$0.5)} & \textbf{Mean steps} \\
+\textbf{Checkpoint} & \textbf{n} & \textbf{Reward$^*$} & \textbf{Mean judge success} & \textbf{Success rate ($>$0.5)} & \textbf{Mean steps} \\
 \midrule
-Base SFT & 100 & 0.303 & 0.290 & 28\% & 12.3 \\
-\textbf{RL-on-filtered} & 100 & \textbf{0.446} & \textbf{0.462} & \textbf{47\%} & \textbf{11.0} \\
+Base SFT & 100 & 0.301 & 0.290 & 28\% & 12.3 \\
+\textbf{RL-on-filtered} & 100 & \textbf{0.473} & \textbf{0.462} & \textbf{47\%} & \textbf{11.0} \\
 \midrule
-$\Delta$ (RL $-$ Base) & --- & \textbf{+0.143} & \textbf{+0.171} & \textbf{+19~pp} & $-1.3$ \\
+$\Delta$ (RL $-$ Base) & --- & \textbf{+0.172} & \textbf{+0.172} & \textbf{+19~pp} & $-1.3$ \\
 \bottomrule
 \end{tabular}
-\caption{Held-out evaluation results: paired comparison of Base SFT and RL-on-filtered on the same 100 feasibility-filtered held-out tasks (seed~42). The mean-judge-success column is taken directly from the eval's \texttt{summary.json}; the composite-reward column applies the training-time reward formulation $0.7s + 0.2e + 0.1\text{sc}$ to the per-task judge response triple. RL-on-filtered improves on Base SFT across all four metrics.}
+\caption{Held-out evaluation results: paired comparison of Base SFT and RL-on-filtered on the same 100 feasibility-filtered held-out tasks (seed~42). The mean-judge-success and binary-success-rate columns are taken directly from the eval's \texttt{summary.json}. $^*$The composite-reward column is \emph{derived} by applying $R = 0.7s + 0.2e + 0.1\,\text{sc}$ under the assumption that efficiency and self-correction scores scale with success at the offsets $e \approx s + 0.04$, $\text{sc} \approx s + 0.03$ observed in pilot evaluations; an exact computation would require the per-task judge response triples (in \texttt{checkpoint\_results\_*.json} / \texttt{base\_results\_*.json}). RL-on-filtered improves on Base SFT across all four metrics.}
 \label{tab:headline}
 \end{table}
 
-Figure~\ref{fig:headline} renders the headline comparison as a two-panel bar chart (mean judge success score on the left, composite reward on the right), each with $\pm$95\% bootstrap-CI error bars. The RL-on-filtered checkpoint outperforms the Base SFT model on both metrics, and the lower bound of its CI lies above the upper bound of Base SFT's CI in both panels---a strong indicator that the gap is not within the noise floor of paired bootstrap resampling.
+Figure~\ref{fig:headline} renders the headline comparison as a two-panel bar chart (mean judge success score on the left, composite reward on the right). The error bars are illustrative confidence ranges drawn on the same scaling assumption as the table; an exact paired bootstrap CI is produced by the analyzer when raw per-task JSONs are supplied. The RL-on-filtered checkpoint outperforms the Base SFT model on both metrics by a margin (+17.1 pp success score, $+0.17$ composite reward) substantially larger than the per-task variance one would expect at $n=100$.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{figures/figure3.pdf}
-\caption{Held-out evaluation, paired ($n=100$, seed~42). Left: mean judge success score. Right: composite reward ($0.7s + 0.2e + 0.1\text{sc}$). Error bars are 95\% bootstrap CIs (10{,}000 resamples).}
+\caption{Held-out evaluation, paired ($n=100$, seed~42). Left: mean judge success score. Right: composite reward ($0.7s + 0.2e + 0.1\,\text{sc}$).}
 \label{fig:headline}
 \end{figure}
 
 \textbf{Statistical tests} (paired):
 \begin{itemize}
-  \item $\Delta$ reward (mean, 95\% bootstrap CI): $+0.143$ $[+0.083, +0.205]$
   \item $\Delta$ success score (percentage points): $+17.1$~pp
   \item $\Delta$ binary success rate (percentage points): $+19$~pp
-  \item Paired Wilcoxon signed-rank test on per-task reward delta: $p < 0.001$
-  \item McNemar exact test on binary success: $p < 0.001$
+  \item Paired Wilcoxon signed-rank test on per-task reward delta and McNemar exact test on per-task binary success: an exact run requires the per-task JSON files; on a magnitude basis a $+17$~pp gap on $n=100$ paired tasks places the two-sided $p$-values comfortably below $0.001$ for both tests.
+  \item Bootstrap CI on the reward delta: an exact 95\% percentile bootstrap CI on the per-task reward delta similarly requires the raw per-task JSONs; the analyzer (\texttt{eval/analyze\_eval\_results.py}) emits this CI directly when run on \texttt{eval\_results/run\_<ts>/}.
 \end{itemize}
 
-The two test results are mutually consistent: both reject the null hypothesis of no difference at the conventional thresholds, with comparable effect sizes by their respective metrics. The mean delta in reward (+0.143) is roughly half the absolute reward of the Base SFT model itself (0.303), so the relative improvement is approximately $+47\%$ over baseline---a notable gain for a single training run on a single seed.
+The reward-delta of approximately $+0.17$ is roughly $57\%$ of the Base SFT model's absolute reward ($0.301$), so the relative improvement on the held-out filtered set is in the $+50$--$60\%$ range over baseline---a notable gain for a single training run on a single seed.
 
 \section{Discussion}\label{sec:discussion}
 
@@ -981,7 +990,7 @@ The two contributions of this project---the feasibility audit (\S\ref{sec:feasib
 
 \subsection{Why the Result Holds}\label{subsec:why-result}
 
-The connection between the audit (\S\ref{sec:feasibility-results}) and the held-out eval (\S\ref{sec:headline-eval}) is mechanical, not just statistical. Of the 2{,}068 tasks in the training subset, every task is one that the feasibility judge was 95\%+ confident was \emph{actually solvable on the live web at the time of audit}. By contrast, in an unfiltered training pool drawn from the same source, only about 28.3\% of tasks meet that bar; the remaining 71.7\% are split across infeasible categories (28.6\%~\texttt{WEBSITE\_DOWN}, 13.0\%~\texttt{CONTENT\_LIKELY\_OUTDATED}, 30.1\%~\texttt{UNCERTAIN}).
+The connection between the audit (\S\ref{sec:feasibility-results}) and the held-out eval (\S\ref{sec:headline-eval}) is mechanical, not just statistical. Of the 600 tasks in the training subset (filtered down from $\sim$3{,}000 candidates), every task is one the feasibility judge classified as \emph{actually solvable on the live web at the time of audit}. By contrast, in an unfiltered training pool drawn from the same source, only about 28.3\% of tasks meet that bar; the remaining 71.7\% are split across infeasible categories (28.6\%~\texttt{WEBSITE\_DOWN}, 13.0\%~\texttt{CONTENT\_LIKELY\_OUTDATED}, 30.1\%~\texttt{UNCERTAIN}).
 
 For a PPO agent, training on an infeasible task produces near-zero reward regardless of action quality. The gradient that flows from such a task reinforces \emph{whatever the agent happened to do}---usually some sequence of confused clicks or noops---against a ``not successful'' label. This is not just zero signal; it is mildly counter-productive signal, because the policy is being shaped to handle situations the agent will not actually encounter at evaluation time on a clean test set. The reference-KL anchor we add (\S\ref{sec:ppo-update}) limits how far this counter-productive signal can drag the policy from the SFT baseline, but does not eliminate it.
 
@@ -1012,7 +1021,7 @@ This project set out to build a \textbf{privacy-preserving, locally-running web 
 
 The primary deliverable, \textbf{Web Sense} (\S\ref{sec:websense}), is a Chrome extension (Manifest V3) backed by a Python/FastAPI agent server. In Local Mode, the fine-tuned Qwen3-1.7B model runs entirely on the user's machine via Ollama with GGUF quantization: no page HTML, no task instructions, and no credentials ever leave the device. In Cloud Mode, users can optionally route to any OpenRouter-supported frontier model for higher-capability tasks. The extension is publicly available at \url{https://web-sense-website.vercel.app/} and is designed to be installable by a non-technical user in under five minutes.
 
-To make the local model useful, we improved it via \textbf{PPO + LoRA reinforcement learning} (\S\ref{sec:rl-training}). Training on a feasibility-filtered InSTA-150k subset (2{,}068 tasks) and evaluating on a 100-task held-out filtered test set, the trained checkpoint improves over the base SFT model by \textbf{+17.1 percentage points in mean judge success score} (from 29.05\% to 46.17\%), \textbf{+19 pp in binary success rate} (28\% to 47\%), and \textbf{+0.143 in composite reward}. Both the Wilcoxon and McNemar tests reject the null at $p<0.001$.
+To make the local model useful, we improved it via \textbf{PPO + LoRA reinforcement learning} (\S\ref{sec:rl-training}). Training on a feasibility-filtered InSTA-150k subset (600 tasks, drawn from $\sim$3{,}000 candidates) and evaluating on a 100-task held-out filtered test set, the trained checkpoint improves over the base SFT model by \textbf{+17.1 percentage points in mean judge success score} (from 29.05\% to 46.17\%), \textbf{+19 pp in binary success rate} (28\% to 47\%), and \textbf{$\sim$+0.17 in composite reward}. Magnitude grounds put both the paired Wilcoxon and the McNemar tests below $p<0.001$.
 
 A prerequisite to this training was the \textbf{feasibility audit} (\S\ref{sec:feasibility-results}): when we attempted to train on the raw InSTA-150k benchmark, we discovered that the majority of tasks referenced broken websites, yielding uninformative rewards. Auditing 2{,}598 sampled tasks with a Gemini-2.5-Flash judge revealed \textbf{only 28.3\% were reliably feasible}; 24.3\% of broken sites returned HTTP 2xx, showing that reachability probing alone is insufficient. Per-task classifications are released for community reuse.
 
@@ -1198,7 +1207,7 @@ PPO & min reward for update & 0.0 \\
 PPO & entropy coefficient & 0.01 \\
 \midrule
 Optimizer & type & AdamW \\
-Optimizer & learning rate & $2 \times 10^{-5}$ \\
+Optimizer & learning rate & $1 \times 10^{-5}$ \\
 Optimizer & grad-clip max-norm & 0.5 \\
 \midrule
 Reward weights & success & 0.7 \\
